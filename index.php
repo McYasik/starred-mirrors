@@ -10,7 +10,11 @@
 
 declare(strict_types=1);
 
-const REPOS_DIR   = __DIR__ . '/repos';
+// Dossier des copies : repos/ à côté de la page, sauf si config.php (local, ignoré par git)
+// en désigne un autre, par exemple sur un disque externe. Modèle : config.example.php.
+$config     = is_file(__DIR__ . '/config.php') ? require __DIR__ . '/config.php' : [];
+$configure  = is_array($config) && !empty($config['repos_dir']);
+define('REPOS_DIR', $configure ? rtrim((string) $config['repos_dir'], '/') : __DIR__ . '/repos');
 
 // Un miroir se nomme <owner>__<repo>.git ; tout autre dossier est ignoré.
 const NOM_MIROIR = '/^([A-Za-z0-9._-]+)__([A-Za-z0-9._-]+)\.git$/';
@@ -36,10 +40,11 @@ function taille_dossier(string $dossier): int {
  */
 function etat_local(): array {
     $etat = [];
-    if (!is_dir(REPOS_DIR)) {
+    $noms = is_dir(REPOS_DIR) ? @scandir(REPOS_DIR) : false;
+    if ($noms === false) {
         return $etat;
     }
-    foreach (scandir(REPOS_DIR) as $nom) {
+    foreach ($noms as $nom) {
         if (!preg_match(NOM_MIROIR, $nom, $m) || !is_dir(REPOS_DIR . '/' . $nom)) {
             continue;
         }
@@ -65,6 +70,15 @@ function etat_local(): array {
 $user = $_GET['user'] ?? '';
 if (!preg_match('/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/', $user)) {
     $user = null;
+}
+
+// Un dossier configuré absent (disque non monté) ou illisible pour le serveur web ferait croire
+// qu'aucune copie n'existe : on le signale. repos/ absent par défaut = rien de copié, c'est normal.
+$probleme = null;
+if (!is_dir(REPOS_DIR)) {
+    $probleme = $configure ? 'Dossier des copies introuvable (disque non monté ?) : les statuts sont faux.' : null;
+} elseif (!is_readable(REPOS_DIR) || @scandir(REPOS_DIR) === false) {
+    $probleme = 'Dossier des copies illisible pour le serveur web : les statuts sont faux, les commandes restent justes.';
 }
 
 $donnees = [
@@ -101,7 +115,11 @@ $donnees = [
 </html>
 <?php return; endif; ?>
     <p>Favoris de <a href="https://github.com/<?= htmlspecialchars($user) ?>?tab=stars"><?= htmlspecialchars($user) ?></a>,
-        copiés dans <code><?= htmlspecialchars(REPOS_DIR) ?></code>. La page ne lance rien : elle donne les commandes à copier.</p>
+        copiés dans <code><?= htmlspecialchars(REPOS_DIR) ?></code><?= $configure ? ' (config.php)' : '' ?>.
+        La page ne lance rien : elle donne les commandes à copier.</p>
+    <?php if ($probleme): ?>
+        <p class="erreur" role="alert"><?= htmlspecialchars($probleme) ?></p>
+    <?php endif; ?>
 </header>
 
 <main>

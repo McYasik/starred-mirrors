@@ -83,7 +83,8 @@
     function commande(l) {
         const [owner, repo] = l.nom.split('/');
         if (!NOM_SUR.test(owner ?? '') || !NOM_SUR.test(repo ?? '')) return null;
-        const cible = `'${data.reposDir}/${owner}__${repo}.git'`;
+        // Chemin entre apostrophes pour le shell ; une apostrophe du chemin devient '\''.
+        const cible = `'${`${data.reposDir}/${owner}__${repo}.git`.replace(/'/g, "'\\''")}'`;
         if (l.horsFavoris || l.local) return `git -C ${cible} remote update`;
         return `git clone --mirror https://github.com/${owner}/${repo}.git ${cible}`;
     }

@@ -1,5 +1,8 @@
 # Les copies miroirs elles-mêmes : locales uniquement, parfois plusieurs Go.
 /repos/
 
+# Dossier des copies personnalisé : local, le modèle est config.example.php.
+/config.php
+
 # Réglages de l'IDE.
 /.idea/

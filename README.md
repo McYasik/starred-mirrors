@@ -18,14 +18,20 @@ d'où le cache dans le navigateur et le bouton « Actualiser ».
 
 ## Commandes produites
 
+La page écrit le chemin absolu du dossier `repos/` : les commandes se lancent depuis n'importe
+quel dossier.
+
 ```bash
 # Première copie
-git clone --mirror https://github.com/<owner>/<repo>.git repos/<owner>__<repo>.git
+git clone --mirror https://github.com/<owner>/<repo>.git '<projet>/repos/<owner>__<repo>.git'
 # Mises à jour
-git -C repos/<owner>__<repo>.git remote update
+git -C '<projet>/repos/<owner>__<repo>.git' remote update
 ```
 
-Les copies vont dans `repos/`, ignoré par git. Clonage en HTTPS anonyme : aucune clé SSH ni
+Les copies vont dans `repos/`, ignoré par git. Pour les ranger ailleurs (disque externe…),
+copier `config.example.php` en `config.php` (ignoré lui aussi) et y indiquer `repos_dir`. Le
+serveur web doit pouvoir lire ce dossier ; s'il est absent ou illisible, la page le signale.
+Clonage en HTTPS anonyme : aucune clé SSH ni
 aucun compte n'est utilisé.
 
 - Mise à jour sans `--prune` : une branche supprimée sur GitHub reste dans la copie. Un
