@@ -1,0 +1,5 @@
+# Les copies miroirs elles-mêmes : locales uniquement, parfois plusieurs Go.
+/repos/
+
+# Réglages de l'IDE.
+/.idea/
